@@ -46,21 +46,23 @@ class Follower_Server():
         :return:
         '''
         while True:
-            data = leader_socket.recv(1024)
+            data = leader_socket.recv(1024).decode()
             if not data:
                 continue
             msg = data.split(":")
 
             if msg[0] == 'UpdateLockmap':
                 self.lock_map.append({'name':msg[1],'client':msg[2]})
+                print("UpdateLockmap")
                 continue
             if msg[0] == 'RemoveLockmap':
                 self.lock_map.remove({'name':msg[1],'client':msg[2]})
+                print("RemoveLockmap")
             if msg[0] == 'PreemptLock Success' or msg[0] == 'PreemptLock Failed' or msg[0] == 'ReleaseLock Success' or msg[0] == 'ReleaseLock Failed':
                 client_id = msg[1]
                 for client in self.clients:
-                    if client['id'] == int(client_id):
-                        client['socket'].sendall(msg[0])
+                    if client['client_id'] == int(client_id):
+                        client['socket'].sendall((msg[0]).encode())
 
     def _new_client(self,c_socket):
         client_id = self.followerid*1000 + len(self.clients) + 1
@@ -69,33 +71,33 @@ class Follower_Server():
 
     def _forward_up(self,leader_socket,c_socket):
         while True:
-            data = c_socket.recv(1024)
+            data = c_socket.recv(1024).decode()
             if not data:
                 continue
             if data == 'NewClient':
                 client_id = self._new_client(c_socket)
-                c_socket.sendall("ClientId:%d"%(client_id))
+                c_socket.sendall(("ClientId:%d"%(client_id)).encode())
                 continue
 
             msg = data.split(":")
             if msg[0] == "PreemptLock":
-                leader_socket.sendall("PreemptLock:%s:%d"%(msg[1], msg[2]))
+                leader_socket.sendall(("PreemptLock:%s:%d"%(msg[1], int(msg[2]))).encode())
                 continue
 
             if msg[0] == "ReleaseLock":
-                leader_socket.sendall("ReleaseLock:%s:%d"%(msg[1], msg[2]))
+                leader_socket.sendall(("ReleaseLock:%s:%d"%(msg[1], int(msg[2]))).encode())
                 continue
 
             if msg[0] == "CheckLock":
-                if self.lock_map == None:
-                    lock_name = None
-                    client_id = None
-                else:
+                if self.lock_map:
                     for lock in self.lock_map:
                         if lock['name'] == msg[1]:
-                            lock_name = lock['name']
+                            # lock_name = lock['name']
                             client_id = lock['client']
-                c_socket.sendall("CheckLock:%s:%d"%(lock_name, client_id))
+                            break
+                    c_socket.sendall(("CheckLock:Lock:%d"%(int(client_id))).encode())
+                else:
+                    c_socket.sendall(("there is no locks in server").encode())
 
 
 
@@ -106,7 +108,7 @@ class Follower_Server():
         leader_socket, follower_id = self._connect_with_leaderserver(host,self.leaderport)
         print("leader socket and follower_id")
         print(leader_socket,follower_id)
-        forward_down = threading.Thread(self._forward_down(leader_socket))
+        forward_down = threading.Thread(target=self._forward_down, args=(leader_socket,))
         forward_down.setDaemon(True)
         forward_down.start()
 
@@ -119,7 +121,7 @@ class Follower_Server():
         while True:
             c_soc, addr = s.accept()
             print("connect with ",addr)
-            forward_up = threading.Thread(self._forward_up(leader_socket,c_soc))
+            forward_up = threading.Thread(target=self._forward_up,args=(leader_socket,c_soc))
             forward_up.setDaemon(True)
             forward_up.start()
 

@@ -65,7 +65,7 @@ class Leader_Sever():
         print('broadcast new lock_map')
         for follower in self.follower_servers:
             c_socket = follower['socket']
-            senddata = "UpdateLockmap:%s:%d"%(lock_name,client_id)
+            senddata = "UpdateLockmap:%s:%d"%(lock_name,int(client_id))
             c_socket.sendall(senddata.encode())
 
     def _release_lock(self,lock_name,client_id):
@@ -81,7 +81,7 @@ class Leader_Sever():
         print("broadcast to remove lock_map")
         for follower in self.follower_servers:
             c_socket = follower['socket']
-            senddata = "RemoveLockmap:%s:%d"%(lock_name,client_id)
+            senddata = "RemoveLockmap:%s:%d"%(lock_name,int(client_id))
             c_socket.sendall(senddata.encode())
 
     def _responce_msg(self,c_socket):
@@ -142,7 +142,7 @@ class Leader_Sever():
             conn_socket, addr = s.accept()
             print("Connect from", addr)
             self.connections.append(conn_socket)
-            leader_server_thread = threading.Thread(target=self._responce_msg(conn_socket))
+            leader_server_thread = threading.Thread(target=self._responce_msg, args=(conn_socket,))
             leader_server_thread.setDaemon(True)
             leader_server_thread.start()
             print("active threads:")

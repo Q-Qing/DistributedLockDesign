@@ -12,9 +12,9 @@ class Thread_test():
 
     def run(self):
         print("run")
-        t1 = threading.Thread(self.thread1())
+        t1 = threading.Thread(target=self.thread1, args=())
         t1.start()
-        t2 = threading.Thread(self.thread2())
+        t2 = threading.Thread(target=self.thread2, args=())
         t2.start()
 
 tt = Thread_test()

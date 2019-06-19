@@ -97,7 +97,7 @@ class My_Client():
         self.create_gui()
 
 
-client = My_Client(9000)
-client.run()
+# client = My_Client(9000)
+# client.run()
 
 
