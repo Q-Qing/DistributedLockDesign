@@ -124,6 +124,6 @@ class Follower_Server():
             forward_up = threading.Thread(target=self._forward_up,args=(leader_socket,c_soc))
             forward_up.setDaemon(True)
             forward_up.start()
-
-f_server = Follower_Server(9001,9000)
-f_server.run()
+#
+# f_server = Follower_Server(9001,9000)
+# f_server.run()
