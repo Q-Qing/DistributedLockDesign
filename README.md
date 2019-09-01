@@ -7,3 +7,10 @@ This is a semester project of Big Data Processing Technologies (Graduate) Spring
 ## Ideas
 
 Here I choose to use sockets to simulate the communication in distributed system. It is not real but it is easier to implement. The server and clients can communicate with each other when they bind the same socket. And multithreading is used to simulate the scenario that multi-clients communicate with one server.
+
+## Functions of different parts
+There is a flow chart of the distributed system.
+
+The leader server is the first part that running in the system. The leader server will bind a socket and keep listenning when the system starts. The leader server will create a new thread to process the communication when a new follower server or client bind the same socket with the leader server. And the thread processing the messages between leader server and follower servers or clients will assign a unique ID to them if it is their first time to connect with the leader server.
+
+The second part is follower server. A follower server will bind two socket ports. One is used to connect with the leader server and another is used to keep listenning for clients.
